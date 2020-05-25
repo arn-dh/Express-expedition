@@ -4,30 +4,36 @@ const port = 3000;
 const connection = require('./conf');
 
 
-app.listen(port, (err) => {
-if (err) {
-    throw new Error('Something bad happened...');
-}
+const bodyParser = require('body-parser');
+// Support JSON-encoded bodies
+app.use(bodyParser.json());
+// Support URL-encoded bodies
+app.use(bodyParser.urlencoded({
+extended: true
+}));
 
-app.get('/api/movies', (req, res) => {
-    connection.query('SELECT * from movie', (err, results) => {
+app.post('/api/employees', (req, res) => {
+
+    // Get the data sent
+    const formData = req.body;
+    
+    // connection to the database, and insertion of the employee
+    connection.query('INSERT INTO employee SET ?', formData, (err, results) => {
+    
         if (err) {
-            res.status(500).send('Error retrieving movies');
-            } else {
-            res.json(results);
-            }
-        });
+        // If an error has occurred, then the user is informed of the error
+        console.log(err);
+        res.status(500).send("Error saving an employee");
+        } else {
+        // If everything went well, we send a status "ok".
+        res.sendStatus(200);
+        }
     });
-
-    app.get('/api/movies/names', (req, res) => {
-        connection.query('SELECT name FROM movie', (err, results) => {
-            if (err) {
-                res.status(500).send('Error retrieving movies');
-                } else {
-                res.json(results);
-                }
-            });
-        });
-
-console.log(`Server is listening on ${port}`);
 });
+
+app.listen(port, (err) => {
+    if (err) {
+        throw new Error('Something bad happened...');
+    } 
+    console.log(`Server is listening on ${port}`);
+}) 
